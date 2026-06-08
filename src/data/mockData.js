@@ -1,0 +1,83 @@
+export const mockData = {
+  stats: {
+    customers: { today: 0, total: 0 },
+    prescriptions: { today: 0, total: 0 },
+    invoices: { today: 0, total: 0 },
+  },
+  expiringDrugs: [
+    { id: 17, name: 'Vinphyton (K1)', expiry: '12/03/2023', stock: 75, unit: 'Ống', importDate: '10/10/2023', importCode: 'PN230212001', batchCode: '1121-102-12032023' },
+    { id: 26, name: 'Advocate 10-25kg', expiry: '06/10/2023', stock: 12, unit: 'Tube', importDate: '10/10/2023', importCode: 'PN230212003', batchCode: '1168-104-06102023' },
+    { id: 11, name: 'Duphalac', expiry: '28/02/2024', stock: 14, unit: 'Gói', importDate: '6/10/2023', importCode: 'PN230208001', batchCode: '1187-101-28022024' },
+    { id: 31, name: 'VITAMIN K-1 /50mg', expiry: '01/04/2024', stock: 91, unit: 'VIÊN', importDate: '24/10/2023', importCode: 'PN230226001', batchCode: '1443-109-01042024' },
+    { id: 27, name: 'Advocate mèo lớn hơn 4kg', expiry: '04/04/2024', stock: 27, unit: 'túi', importDate: '10/10/2023', importCode: 'PN230212003', batchCode: '1253-104-04042024' },
+  ],
+  recentActivities: [
+    {
+      id: 'DT230227096',
+      customer: 'Hoàng Chiến Thắng',
+      customerCode: '#BN150101723',
+      date: '25/10/2023 19:14',
+      staff: 'Nhân viên quầy 1',
+      type: 'don-thuoc',
+    },
+    {
+      id: 'DT230227095',
+      customer: 'Đỗ Anh Trần',
+      customerCode: '#BN220802002',
+      note: '- Cắt chỉ',
+      date: '25/10/2023 18:54',
+      staff: 'BS. Bình',
+      type: 'don-thuoc',
+    },
+    {
+      id: 'DT230227094',
+      customer: 'Phùng Đình Trung',
+      customerCode: '#BN150107202',
+      note: '- Nhiễm erichias spp,',
+      date: '25/10/2023 18:47',
+      staff: 'BS. Bình',
+      type: 'don-thuoc',
+    },
+    {
+      id: 'DT230227093',
+      customer: 'Tào Nhân Văn',
+      customerCode: '#BN150109909',
+      note: '- ký sinh trùng máu Anaplasma',
+      date: '25/10/2023 18:45',
+      staff: 'BS. Bình',
+      type: 'don-thuoc',
+    },
+    {
+      id: 'DT230227092',
+      customer: 'Đỗ Hân Diệu',
+      customerCode: '#BN230227005',
+      date: '25/10/2023 18:40',
+      staff: 'BS. Bình',
+      type: 'don-thuoc',
+    },
+  ],
+  customers: [
+    { id: 1, name: 'Nguyễn Văn A', phone: '0901234567', email: 'a@gmail.com', pets: 2 },
+    { id: 2, name: 'Trần Thị B', phone: '0912345678', email: 'b@gmail.com', pets: 1 },
+    { id: 3, name: 'Lê Văn C', phone: '0923456789', email: 'c@gmail.com', pets: 3 },
+  ],
+  pets: [
+    { id: 1, name: 'Miu', species: 'Mèo', breed: 'Mèo ta', age: '2 tuổi', owner: 'Nguyễn Văn A' },
+    { id: 2, name: 'Vàng', species: 'Chó', breed: 'Chó cỏ', age: '3 tuổi', owner: 'Trần Thị B' },
+  ],
+  appointments: [
+    { id: 1, customer: 'Nguyễn Văn A', pet: 'Miu', date: '2023-10-25', time: '09:00', status: 'Đã xác nhận', service: 'Khám tổng quát' },
+    { id: 2, customer: 'Trần Thị B', pet: 'Vàng', date: '2023-10-25', time: '10:30', status: 'Chờ xác nhận', service: 'Tiêm phòng' },
+    { id: 3, customer: 'Lê Văn C', pet: 'Bông', date: '2023-10-26', time: '14:00', status: 'Đã xác nhận', service: 'Cắt tỉa lông' },
+  ],
+  drugs: [
+    { id: 1, name: 'Vinphyton (K1)', category: 'Vitamin', stock: 75, unit: 'Ống', price: 15000, expiry: '12/03/2023' },
+    { id: 2, name: 'Advocate 10-25kg', category: 'Thuốc ngoại ký sinh', stock: 12, unit: 'Tube', price: 350000, expiry: '06/10/2023' },
+    { id: 3, name: 'Duphalac', category: 'Thuốc tiêu hóa', stock: 14, unit: 'Gói', price: 8000, expiry: '28/02/2024' },
+    { id: 4, name: 'VITAMIN K-1 /50mg', category: 'Vitamin', stock: 91, unit: 'VIÊN', price: 5000, expiry: '01/04/2024' },
+  ],
+  invoices: [
+    { id: 'HD001', customer: 'Nguyễn Văn A', date: '25/10/2023', total: 500000, status: 'Đã thanh toán' },
+    { id: 'HD002', customer: 'Trần Thị B', date: '25/10/2023', total: 350000, status: 'Chờ thanh toán' },
+  ],
+};
