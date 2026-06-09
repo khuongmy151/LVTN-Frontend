@@ -11,7 +11,7 @@ function Navbar() {
 
   const menuItems = [
     {
-      label: 'KHÁCH HÀNG', icon: <FaUsers />, path: '/khach-hang',
+      label: 'HỒ SƠ ĐIỆN TỬ', icon: <FaUsers />, path: '/ho-so-dien-tu',
       children: [
         { label: 'Khách hàng', path: '/khach-hang' },
         { label: 'Vật nuôi', path: '/vat-nuoi' },
