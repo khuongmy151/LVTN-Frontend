@@ -23,6 +23,7 @@ function Navbar() {
         { label: 'Hôm nay', path: '/lich-hen/hom-nay' },
         { label: 'Quản lý lịch hẹn', path: '/lich-hen/quan-ly' },
         { label: 'Block lịch hẹn', path: '/lich-hen/block' },
+        { label: 'Bác sĩ', path: '/lich-hen/bac' },
       ]
     },
     {
