@@ -23,7 +23,9 @@ function QuanLyLichHen() {
   // Modal states
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showExamModal, setShowExamModal] = useState(false);
+  const [showChangeTimeModal, setShowChangeTimeModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [editingCell, setEditingCell] = useState(null); // { rowId, field }
   const [expandedSections, setExpandedSections] = useState({
     customer: true,
     newCustomer: false,
@@ -31,14 +33,64 @@ function QuanLyLichHen() {
     appointmentDetails: true
   });
 
+  // Time slots
+  const timeSlots = [
+    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
+    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
+    '17:00', '17:30', '18:00', '18:30'
+  ];
+
+  // Room options
+  const roomOptions = [
+    { value: '', label: '--- Chọn ---' },
+    { value: 'Nha thuoc', label: 'Nhà thuốc' },
+    { value: 'Phong can lam sang', label: 'Phòng cận lâm sàng' },
+    { value: 'Phong kham', label: 'Phòng khám' },
+    { value: 'Phong xet nghiem', label: 'Phòng xét nghiệm' },
+    { value: 'Tai nha', label: 'Tại nhà' }
+  ];
+
+  // Doctor options
+  const doctorOptions = [
+    { value: '', label: '--- Chọn ---' },
+    { value: 'BS. An', label: 'BS. An' },
+    { value: 'BS. Binh', label: 'BS. Bình' }
+  ];
+
+  // Status options
+  const statusOptionsTable = [
+    { value: '', label: '--- Chọn ---' },
+    { value: 'Chua kham', label: 'Chưa khám' },
+    { value: 'DK tren website', label: 'ĐK trên website' },
+    { value: 'Da kham', label: 'Đã khám' },
+    { value: 'Doi ngay khac', label: 'Dời ngày khác' },
+    { value: 'Het benh', label: 'Hết bệnh' },
+    { value: 'Xac nhan kham', label: 'Xác nhận khám' }
+  ];
+
   // Mock appointments data
   const [appointments, setAppointments] = useState([
     {
-      id: 1, stt: 1, date: '18/10/2023', timeFrom: '12:00', timeTo: '09:00',
-      customerName: 'Võ Cát Tường', customerPhone: '0902686529', customerAddress: 'Ninh Thuận',
-      petName: 'BI', petCode: 'PE150023152', petSpecies: 'Mèo (Cat)', petBreed: 'Việt Nam',
-      reason: 'Xổ mũi ghkgh', oldPrescriptionNotes: '', isReexam: true,
-      room: 'Phòng khám', doctor: 'BS. An', status: 'Chưa khám', notes: ''
+      id: 1, stt: 1, date: '15/10/2023', timeFrom: '', timeTo: '',
+      customerName: 'Trương Thiên Di', customerPhone: '0903080872', customerAddress: 'Đắk Nông',
+      petName: 'Sana', petCode: 'PE230216005', petSpecies: 'Mèo (Cat)', petBreed: 'Việt Nam', petAge: '3 tuổi 3 tháng',
+      reason: 'Thiến', oldPrescriptionNotes: 'hậu phẫu', isReexam: true,
+      room: '', doctor: '', status: 'Chua kham', notes: ''
+    },
+    {
+      id: 2, stt: 2, date: '30/09/2023', timeFrom: '', timeTo: '',
+      customerName: 'Trương Thiên Di', customerPhone: '0903080872', customerAddress: 'Đắk Nông',
+      petName: 'mèo thiên 1', petCode: 'PE230201015', petSpecies: 'Mèo (Cat)', petBreed: 'Khác', petAge: '4 tuổi 5 tháng',
+      reason: 'thiến', oldPrescriptionNotes: 'hậu phẫu', isReexam: true,
+      room: '', doctor: '', status: 'Chua kham', notes: ''
+    },
+    {
+      id: 3, stt: 3, date: '20/10/2023', timeFrom: '', timeTo: '',
+      customerName: 'Tăng Hữu Phước', customerPhone: '0902089573', customerAddress: 'Lâm Đồng',
+      petName: 'đen 1', petCode: 'PE230220009', petSpecies: 'Chó (Dog)', petBreed: 'Khác', petAge: '3 tuổi 5 tháng',
+      reason: 'khám', oldPrescriptionNotes: '', isReexam: true,
+      room: '', doctor: '', status: 'Chua kham', notes: ''
     }
   ]);
 
@@ -66,8 +118,13 @@ function QuanLyLichHen() {
     status: 'Xac nhan kham', temperature: '', weight: ''
   });
 
+  const [changeTimeForm, setChangeTimeForm] = useState({
+    date: '15/10/2023',
+    time: '00:00'
+  });
+
   // Filter options
-  const statusOptions = [
+  const statusFilterOptions = [
     { value: 'all', label: 'Tất cả trạng thái' },
     { value: 'Chua kham', label: 'Chưa khám' },
     { value: 'Da kham', label: 'Đã khám' },
@@ -111,7 +168,6 @@ function QuanLyLichHen() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Xử lý nút "Khách hàng mới" → mở modal Đặt lịch hẹn ĐẦY ĐỦ
   const handleNewCustomer = () => {
     setAppointmentForm({
       customerId: '', customerName: '', customerPhone: '', customerAddress: '',
@@ -127,7 +183,6 @@ function QuanLyLichHen() {
     setShowAppointmentModal(true);
   };
 
-  // Xử lý nút "Tái khám" → mở modal Đăng ký khám
   const handleReexam = () => {
     setExamForm({
       customerId: '', customerName: '', customerCode: '', petId: '', petName: '',
@@ -138,7 +193,6 @@ function QuanLyLichHen() {
     setShowExamModal(true);
   };
 
-  // Click vào icon tái khám trong bảng
   const handleShowAppointment = (appointment) => {
     if (appointment) {
       setSelectedAppointment(appointment);
@@ -198,6 +252,35 @@ function QuanLyLichHen() {
     return pages;
   };
 
+  // Handle inline editing
+  const handleCellEdit = (id, field, value) => {
+    setAppointments(appointments.map(apt => 
+      apt.id === id ? { ...apt, [field]: value } : apt
+    ));
+  };
+
+  // Handle change time
+  const handleChangeTime = (appointment) => {
+    setSelectedAppointment(appointment);
+    setChangeTimeForm({
+      date: appointment.date,
+      time: appointment.timeFrom || '00:00'
+    });
+    setShowChangeTimeModal(true);
+  };
+
+  const handleSaveChangeTime = () => {
+    if (selectedAppointment) {
+      const [hours, minutes] = changeTimeForm.time.split(':');
+      const newTimeFrom = `${hours}:${minutes}`;
+      
+      setAppointments(appointments.map(apt =>
+        apt.id === selectedAppointment.id ? { ...apt, timeFrom: newTimeFrom, date: changeTimeForm.date } : apt
+      ));
+    }
+    setShowChangeTimeModal(false);
+  };
+
   return (
     <div className="khachhang-container">
       {/* ===== HEADER ===== */}
@@ -208,7 +291,7 @@ function QuanLyLichHen() {
         </button>
       </div>
 
-      {/* ===== FILTER BAR (GIỮ NGUYÊN TỪ CODE 2) ===== */}
+      {/* ===== FILTER BAR ===== */}
       <div className="search-filter-container" style={{ padding: '12px 15px' }}>
         <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <FaCalendarAlt style={{ color: '#4ECDC4' }} />
@@ -265,7 +348,7 @@ function QuanLyLichHen() {
               fontSize: '13px', minWidth: '120px', cursor: 'pointer', background: 'white'
             }}
           >
-            {statusOptions.map(opt => (
+            {statusFilterOptions.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
@@ -307,7 +390,7 @@ function QuanLyLichHen() {
         </div>
       </div>
 
-      {/* ===== QUICK APPOINTMENT SECTION (GIỮ NGUYÊN TỪ CODE 2) ===== */}
+      {/* ===== QUICK APPOINTMENT SECTION ===== */}
       <div style={{ 
         border: '1px dashed #4ECDC4', borderRadius: '8px', padding: '15px',
         marginBottom: '20px', background: '#f8f9fa'
@@ -356,13 +439,12 @@ function QuanLyLichHen() {
         </div>
       </div>
 
-      {/* ===== MAIN TABLE (GIỮ NGUYÊN TỪ CODE 2) ===== */}
+      {/* ===== MAIN TABLE WITH INLINE EDITING ===== */}
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
             <tr>
-              <th width="40"></th>
-              <th width="50">STT</th>
+              <th width="40">STT</th>
               <th>NGÀY</th>
               <th>TỪ</th>
               <th>ĐẾN</th>
@@ -375,116 +457,171 @@ function QuanLyLichHen() {
               <th>BS KHÁM</th>
               <th>TRẠNG THÁI</th>
               <th width="60">ĐỔI GIỜ</th>
-              <th width="60">HỒ SƠ</th>
-              <th width="40">...</th>
-              <th width="60">XÓA</th>
             </tr>
           </thead>
           <tbody>
-            {currentAppointments.length === 0 ? (
-              <tr>
-                <td colSpan="17" className="no-data-row">
-                  <p>Không có dữ liệu để hiển thị theo yêu cầu</p>
+            {currentAppointments.map((apt) => (
+              <tr key={apt.id}>
+                <td>{apt.stt}</td>
+                <td>{apt.date}</td>
+                <td>
+                  <select
+                    value={apt.timeFrom}
+                    onChange={(e) => handleCellEdit(apt.id, 'timeFrom', e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      minWidth: '80px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="">--- Chọn ---</option>
+                    {timeSlots.map(time => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <select
+                    value={apt.timeTo}
+                    onChange={(e) => handleCellEdit(apt.id, 'timeTo', e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      minWidth: '80px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="">--- Chọn ---</option>
+                    {timeSlots.map(time => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <div>
+                    <div style={{ fontWeight: '600', color: '#2196F3', cursor: 'pointer' }}>
+                      {apt.customerName}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>
+                      <FaPhone size={10} style={{ marginRight: '3px' }} />{apt.customerPhone}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>
+                      <FaMapMarkerAlt size={10} style={{ marginRight: '3px' }} />{apt.customerAddress}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    <div style={{ fontWeight: '500', color: '#4ECDC4' }}>
+                      <FaPaw size={12} style={{ marginRight: '5px' }} />
+                      {apt.petName} - {apt.petCode}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>
+                      {apt.petSpecies} - {apt.petBreed}
+                    </div>
+                    {apt.petAge && (
+                      <div style={{ fontSize: '12px', color: '#888' }}>{apt.petAge}</div>
+                    )}
+                  </div>
+                </td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span>{apt.reason}</span>
+                    <FaEdit size={12} style={{ color: '#4ECDC4', cursor: 'pointer' }} />
+                  </div>
+                </td>
+                <td>{apt.oldPrescriptionNotes || '-'}</td>
+                <td>
+                  {apt.isReexam && (
+                    <div 
+                      onClick={() => handleShowAppointment(apt)}
+                      style={{ 
+                        width: '24px', height: '24px', borderRadius: '50%',
+                        border: '2px solid #4CAF50', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', margin: '0 auto'
+                      }}
+                      title="Đăng ký khám"
+                    >
+                      <FaCheck style={{ color: '#4CAF50', fontSize: '12px' }} />
+                    </div>
+                  )}
+                </td>
+                <td>
+                  <select
+                    value={apt.room}
+                    onChange={(e) => handleCellEdit(apt.id, 'room', e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      minWidth: '120px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {roomOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <select
+                    value={apt.doctor}
+                    onChange={(e) => handleCellEdit(apt.id, 'doctor', e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      minWidth: '100px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {doctorOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <select
+                    value={apt.status}
+                    onChange={(e) => handleCellEdit(apt.id, 'status', e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      minWidth: '120px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {statusOptionsTable.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <button 
+                    className="icon-btn" 
+                    title="Đổi giờ"
+                    onClick={() => handleChangeTime(apt)}
+                  >
+                    <FaClock />
+                  </button>
                 </td>
               </tr>
-            ) : (
-              currentAppointments.map((apt) => (
-                <tr key={apt.id}>
-                  <td><button className="expand-btn"><FaPlus /></button></td>
-                  <td>{apt.stt}</td>
-                  <td>{apt.date}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span>{apt.timeFrom || '-'}</span>
-                      <FaEdit size={12} style={{ color: '#4ECDC4', cursor: 'pointer' }} />
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span>{apt.timeTo || '-'}</span>
-                      <FaEdit size={12} style={{ color: '#4ECDC4', cursor: 'pointer' }} />
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div style={{ fontWeight: '600', color: '#2196F3', cursor: 'pointer' }}>
-                        {apt.customerName}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#666' }}>
-                        <FaPhone size={10} style={{ marginRight: '3px' }} />{apt.customerPhone}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#666' }}>
-                        <FaMapMarkerAlt size={10} style={{ marginRight: '3px' }} />{apt.customerAddress}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div style={{ fontWeight: '500', color: '#4ECDC4' }}>
-                        <FaPaw size={12} style={{ marginRight: '5px' }} />
-                        {apt.petName} - {apt.petCode}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#666' }}>
-                        {apt.petSpecies} - {apt.petBreed}
-                      </div>
-                      {apt.petAge && (
-                        <div style={{ fontSize: '12px', color: '#888' }}>{apt.petAge}</div>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span>{apt.reason}</span>
-                      <FaEdit size={12} style={{ color: '#4ECDC4', cursor: 'pointer' }} />
-                    </div>
-                  </td>
-                  <td>{apt.oldPrescriptionNotes || '-'}</td>
-                  <td>
-                    {apt.isReexam && (
-                      <div 
-                        onClick={() => handleShowAppointment(apt)}
-                        style={{ 
-                          width: '24px', height: '24px', borderRadius: '50%',
-                          border: '2px solid #4CAF50', display: 'flex',
-                          alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer', margin: '0 auto'
-                        }}
-                        title="Đăng ký khám"
-                      >
-                        <FaCheck style={{ color: '#4CAF50', fontSize: '12px' }} />
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span>{apt.room || '-'}</span>
-                      <FaEdit size={12} style={{ color: '#4ECDC4', cursor: 'pointer' }} />
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span>{apt.doctor || '-'}</span>
-                      <FaEdit size={12} style={{ color: '#4ECDC4', cursor: 'pointer' }} />
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span>{apt.status}</span>
-                      <FaEdit size={12} style={{ color: '#4ECDC4', cursor: 'pointer' }} />
-                    </div>
-                  </td>
-                  <td><button className="icon-btn" title="Đổi giờ"><FaClock /></button></td>
-                  <td><button className="icon-btn profile" title="Hồ sơ"><FaFolderOpen /></button></td>
-                  <td><button className="icon-btn" title="Thêm"><FaPlus /></button></td>
-                  <td><button className="icon-btn" title="Xóa"><FaTrash /></button></td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
-      {/* ===== PAGINATION (GIỮ NGUYÊN TỪ CODE 2) ===== */}
+      {/* ===== PAGINATION ===== */}
       <div className="pagination">
         <div className="pagination-info">Trang</div>
         
@@ -523,6 +660,62 @@ function QuanLyLichHen() {
           </select>
         </div>
       </div>
+
+      {/* ===== MODAL: ĐỔI GIỜ KHÁM ===== */}
+      {showChangeTimeModal && selectedAppointment && (
+        <div className="modal-overlay" onClick={() => setShowChangeTimeModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>ĐỔI GIỜ KHÁM</h3>
+              <button className="close-btn" onClick={() => setShowChangeTimeModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Dời đến</label>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input
+                    type="date"
+                    value={changeTimeForm.date.split('/').reverse().join('-')}
+                    onChange={(e) => setChangeTimeForm({...changeTimeForm, date: e.target.value.split('-').reverse().join('/')})}
+                    style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                  <select
+                    value={changeTimeForm.time}
+                    onChange={(e) => setChangeTimeForm({...changeTimeForm, time: e.target.value})}
+                    style={{
+                      padding: '8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      minWidth: '80px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {timeSlots.map(time => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {selectedAppointment.oldPrescriptionNotes && (
+                <div style={{ marginTop: '15px', padding: '10px', background: '#fff3cd', borderRadius: '4px', fontSize: '13px' }}>
+                  <strong>Đơn thuốc liên quan:</strong> DT230216031 ({selectedAppointment.date})
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn-cancel" onClick={() => setShowChangeTimeModal(false)}>
+                Hủy
+              </button>
+              <button type="button" className="btn-save" onClick={handleSaveChangeTime}>
+                Cập nhật
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== MODAL: ĐẶT LỊCH HẸN (TỪ CODE 1 - ĐẦY ĐỦ) ===== */}
       {showAppointmentModal && (
