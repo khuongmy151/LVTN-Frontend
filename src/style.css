@@ -3985,3 +3985,544 @@ tr:hover .edit-on-hover {
     border-right-color: #4ECDC4;
   }
 }
+/* ===== EDIT PRESCRIPTION MODAL ===== */
+.modal-content-edit-prescription {
+  background: white;
+  border-radius: 8px;
+  width: 98%;
+  max-width: 1600px;
+  max-height: 95vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header-edit {
+  background: #4ECDC4;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header-edit h3 {
+  margin: 0;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.modal-body-edit-prescription {
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  overflow-y: auto;
+  background: #f5f7fa;
+}
+
+/* Left Panel */
+.edit-left-panel {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.edit-section {
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.edit-section h4 {
+  background: #e8f5e9;
+  color: #4CAF50;
+  margin: 0;
+  padding: 10px 15px;
+  font-size: 14px;
+}
+
+.drug-groups {
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.group-btn {
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.group-btn:hover {
+  background: #f0f0f0;
+}
+
+.group-btn.active {
+  background: #4ECDC4;
+  color: white;
+  border-color: #4ECDC4;
+}
+
+.drug-list {
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.drug-item {
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.drug-item:hover {
+  background: #e8f5e9;
+}
+
+/* Center Panel */
+.edit-center-panel {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.prescription-form {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.form-title {
+  text-align: center;
+  color: #4CAF50;
+  margin: 0 0 5px 0;
+  font-size: 20px;
+}
+
+.form-code {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+
+.form-row label {
+  min-width: 120px;
+  font-weight: 500;
+  color: #555;
+  font-size: 13px;
+}
+
+.form-value {
+  flex: 1;
+  color: #333;
+  font-size: 13px;
+}
+
+.form-input,
+.form-input-small,
+.form-select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.form-input-small {
+  max-width: 150px;
+}
+
+/* Duration Buttons */
+.duration-buttons {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.duration-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.duration-btn:hover {
+  background: #f0f0f0;
+}
+
+.duration-btn.active {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+
+.duration-btn.custom {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.days-input {
+  width: 40px;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* Drug List Edit */
+.prescription-drugs-edit {
+  margin: 20px 0;
+}
+
+.drug-row-edit {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.drug-number-edit {
+  font-weight: 600;
+  color: #666;
+  min-width: 30px;
+}
+
+.drug-details-edit {
+  flex: 1;
+}
+
+.drug-name-edit {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.drug-usage-edit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.drug-usage-edit label {
+  color: #666;
+}
+
+.usage-input {
+  flex: 1;
+  max-width: 200px;
+  padding: 5px 8px;
+  border: 1px dotted #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.drug-quantity-edit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.qty-input-small {
+  width: 60px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.btn-remove-drug {
+  background: none;
+  border: none;
+  color: #f44336;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.btn-add-drug-main {
+  background: none;
+  border: none;
+  color: #4ECDC4;
+  font-size: 24px;
+  cursor: pointer;
+  display: block;
+  margin: 10px auto;
+}
+
+/* Footer Edit */
+.prescription-footer-edit {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.footer-left {
+  flex: 1;
+}
+
+.notes-textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px dotted #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.footer-right {
+  text-align: right;
+  min-width: 200px;
+}
+
+.creator-info-edit {
+  margin-top: 40px;
+}
+
+.creator-info-edit > div:first-child {
+  margin-bottom: 30px;
+  color: #666;
+}
+
+.creator-title {
+  font-weight: bold;
+  margin-bottom: 40px;
+  color: #333;
+}
+
+.creator-name {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Right Panel */
+.edit-right-panel {
+  width: 350px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.right-section {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.section-header {
+  background: #e8f5e9;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header h4 {
+  margin: 0;
+  color: #4CAF50;
+  font-size: 14px;
+}
+
+.btn-add,
+.btn-upload {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.section-content {
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.progress-item,
+.vital-item,
+.file-item {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.progress-date,
+.vital-date,
+.file-date {
+  background: #e0e0e0;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+.progress-note {
+  font-size: 12px;
+  color: #666;
+}
+
+.progress-actions,
+.vital-actions,
+.file-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+.progress-actions button,
+.vital-actions button,
+.file-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.vital-data {
+  font-size: 12px;
+  color: #666;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.file-type {
+  background: #f44336;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.file-name {
+  font-size: 12px;
+  color: #333;
+}
+
+.history-item {
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.history-item.active {
+  background: #ffe082;
+  border-left: 3px solid #4ECDC4;
+}
+
+/* Modal Footer Edit */
+.modal-footer-edit {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.edit-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-update {
+  padding: 10px 20px;
+  background: #4ECDC4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-update:hover {
+  background: #3dbdb5;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .modal-body-edit-prescription {
+    flex-direction: column;
+  }
+  
+  .edit-left-panel,
+  .edit-right-panel {
+    width: 100%;
+  }
+  
+  .edit-center-panel {
+    order: -1;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .modal-overlay {
+    position: static;
+    background: white;
+  }
+  
+  .modal-content-view {
+    box-shadow: none;
+    max-width: 100%;
+  }
+}

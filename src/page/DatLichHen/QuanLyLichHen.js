@@ -5,7 +5,8 @@ import {
   FaCheck, FaTimes, FaEdit, FaPlus, FaTrash,
   FaClock, FaUser, FaPaw, FaPhone, FaMapMarkerAlt,
   FaFileMedical, FaClipboardList, FaEllipsisH,
-  FaExchangeAlt, FaFolderOpen, FaChevronUp, FaSave, FaPrint
+  FaExchangeAlt, FaFolderOpen, FaChevronUp, FaSave, FaPrint,
+  FaQrcode, FaWeight, FaFileAlt, FaHistory
 } from 'react-icons/fa';
 
 function QuanLyLichHen() {
@@ -24,8 +25,10 @@ function QuanLyLichHen() {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showExamModal, setShowExamModal] = useState(false);
   const [showChangeTimeModal, setShowChangeTimeModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [editingCell, setEditingCell] = useState(null); // { rowId, field }
+  const [editingCell, setEditingCell] = useState(null); // { rowId, field, value }
   const [expandedSections, setExpandedSections] = useState({
     customer: true,
     newCustomer: false,
@@ -69,28 +72,54 @@ function QuanLyLichHen() {
     { value: 'Xac nhan kham', label: 'Xác nhận khám' }
   ];
 
-  // Mock appointments data
+  // Mock appointments data with more details
   const [appointments, setAppointments] = useState([
     {
       id: 1, stt: 1, date: '15/10/2023', timeFrom: '', timeTo: '',
       customerName: 'Trương Thiên Di', customerPhone: '0903080872', customerAddress: 'Đắk Nông',
       petName: 'Sana', petCode: 'PE230216005', petSpecies: 'Mèo (Cat)', petBreed: 'Việt Nam', petAge: '3 tuổi 3 tháng',
       reason: 'Thiến', oldPrescriptionNotes: 'hậu phẫu', isReexam: true,
-      room: '', doctor: '', status: 'Chua kham', notes: ''
+      room: '', doctor: '', status: 'Chua kham', notes: '',
+      customerId: 'BN150100037',
+      prescriptions: [
+        { id: 'DT230221104', date: '19/10/2023', diagnosis: 'viêm hô hấp', advice: '', reexamDate: '20/10/2023' },
+        { id: 'DT230219055', date: '17/10/2023', diagnosis: 'viêm hô hấp', advice: '', reexamDate: '18/10/2023' },
+        { id: 'DT230205059', date: '03/10/2023', diagnosis: 'viêm họng', advice: 'tái khám', reexamDate: '04/10/2023' }
+      ],
+      progress: [
+        { date: '05/03/2023', note: 'nghẹt mũi khò khè' },
+        { date: '21/02/2023', note: 'Hắc xì chảy mũi' },
+        { date: '25/01/2023', note: 'sưng đỏ vòm họng, khò khè' },
+        { date: '18/01/2023', note: 'hết sổ mũi, lâu lâu còn khò khè' }
+      ],
+      vitals: [
+        { date: '05/03/2023', temperature: '', weight: '2.2 Kg' },
+        { date: '21/02/2023', temperature: '', weight: '2.2 Kg' },
+        { date: '19/02/2023', temperature: '', weight: '2.2 Kg' },
+        { date: '05/02/2023', temperature: '', weight: '2.2 Kg' }
+      ]
     },
     {
       id: 2, stt: 2, date: '30/09/2023', timeFrom: '', timeTo: '',
       customerName: 'Trương Thiên Di', customerPhone: '0903080872', customerAddress: 'Đắk Nông',
       petName: 'mèo thiên 1', petCode: 'PE230201015', petSpecies: 'Mèo (Cat)', petBreed: 'Khác', petAge: '4 tuổi 5 tháng',
       reason: 'thiến', oldPrescriptionNotes: 'hậu phẫu', isReexam: true,
-      room: '', doctor: '', status: 'Chua kham', notes: ''
+      room: '', doctor: '', status: 'Chua kham', notes: '',
+      customerId: 'BN150100037',
+      prescriptions: [],
+      progress: [],
+      vitals: []
     },
     {
       id: 3, stt: 3, date: '20/10/2023', timeFrom: '', timeTo: '',
       customerName: 'Tăng Hữu Phước', customerPhone: '0902089573', customerAddress: 'Lâm Đồng',
       petName: 'đen 1', petCode: 'PE230220009', petSpecies: 'Chó (Dog)', petBreed: 'Khác', petAge: '3 tuổi 5 tháng',
       reason: 'khám', oldPrescriptionNotes: '', isReexam: true,
-      room: '', doctor: '', status: 'Chua kham', notes: ''
+      room: '', doctor: '', status: 'Chua kham', notes: '',
+      customerId: 'BN150100038',
+      prescriptions: [],
+      progress: [],
+      vitals: []
     }
   ]);
 
@@ -120,7 +149,8 @@ function QuanLyLichHen() {
 
   const [changeTimeForm, setChangeTimeForm] = useState({
     date: '15/10/2023',
-    time: '00:00'
+    time: '00:00',
+    notes: ''
   });
 
   // Filter options
@@ -259,12 +289,35 @@ function QuanLyLichHen() {
     ));
   };
 
+  // Handle edit click for reason field
+  const handleEditClick = (apt) => {
+    setEditingCell({ 
+      rowId: apt.id, 
+      field: 'reason', 
+      value: apt.reason 
+    });
+  };
+
+  // Handle save edit
+  const handleSaveEdit = () => {
+    if (editingCell) {
+      handleCellEdit(editingCell.rowId, editingCell.field, editingCell.value);
+      setEditingCell(null);
+    }
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setEditingCell(null);
+  };
+
   // Handle change time
   const handleChangeTime = (appointment) => {
     setSelectedAppointment(appointment);
     setChangeTimeForm({
       date: appointment.date,
-      time: appointment.timeFrom || '00:00'
+      time: appointment.timeFrom || '00:00',
+      notes: appointment.notes || ''
     });
     setShowChangeTimeModal(true);
   };
@@ -275,10 +328,34 @@ function QuanLyLichHen() {
       const newTimeFrom = `${hours}:${minutes}`;
       
       setAppointments(appointments.map(apt =>
-        apt.id === selectedAppointment.id ? { ...apt, timeFrom: newTimeFrom, date: changeTimeForm.date } : apt
+        apt.id === selectedAppointment.id ? { 
+          ...apt, 
+          timeFrom: newTimeFrom, 
+          date: changeTimeForm.date,
+          notes: changeTimeForm.notes
+        } : apt
       ));
     }
     setShowChangeTimeModal(false);
+  };
+
+  // Handle show profile
+  const handleShowProfile = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowProfileModal(true);
+  };
+
+  // Handle show progress
+  const handleShowProgress = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowProgressModal(true);
+  };
+
+  // Handle delete
+  const handleDelete = (id) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa lịch hẹn này?')) {
+      setAppointments(appointments.filter(apt => apt.id !== id));
+    }
   };
 
   return (
@@ -457,6 +534,9 @@ function QuanLyLichHen() {
               <th>BS KHÁM</th>
               <th>TRẠNG THÁI</th>
               <th width="60">ĐỔI GIỜ</th>
+              <th width="60">HỒ SƠ</th>
+              <th width="40">...</th>
+              <th width="60">XÓA</th>
             </tr>
           </thead>
           <tbody>
@@ -530,10 +610,64 @@ function QuanLyLichHen() {
                   </div>
                 </td>
                 <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span>{apt.reason}</span>
-                    <FaEdit size={12} style={{ color: '#4ECDC4', cursor: 'pointer' }} />
-                  </div>
+                  {editingCell && editingCell.rowId === apt.id && editingCell.field === 'reason' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <input
+                        type="text"
+                        value={editingCell.value}
+                        onChange={(e) => setEditingCell({...editingCell, value: e.target.value})}
+                        style={{
+                          flex: 1,
+                          padding: '4px 8px',
+                          border: '1px solid #4ECDC4',
+                          borderRadius: '4px',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveEdit();
+                          if (e.key === 'Escape') handleCancelEdit();
+                        }}
+                      />
+                      <button 
+                        onClick={handleSaveEdit}
+                        style={{
+                          background: '#4CAF50',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '4px 8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <FaCheck size={12} />
+                      </button>
+                      <button 
+                        onClick={handleCancelEdit}
+                        style={{
+                          background: '#f44336',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '4px 8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <FaTimes size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span>{apt.reason}</span>
+                      <FaEdit 
+                        size={12} 
+                        style={{ color: '#4ECDC4', cursor: 'pointer' }}
+                        onClick={() => handleEditClick(apt)}
+                        title="Chỉnh sửa"
+                      />
+                    </div>
+                  )}
                 </td>
                 <td>{apt.oldPrescriptionNotes || '-'}</td>
                 <td>
@@ -615,6 +749,34 @@ function QuanLyLichHen() {
                     <FaClock />
                   </button>
                 </td>
+                <td>
+                  <button 
+                    className="icon-btn" 
+                    title="Hồ sơ"
+                    onClick={() => handleShowProfile(apt)}
+                  >
+                    <FaFolderOpen />
+                  </button>
+                </td>
+                <td>
+                  <button 
+                    className="icon-btn" 
+                    title="Diễn tiến/Files"
+                    onClick={() => handleShowProgress(apt)}
+                  >
+                    <FaEllipsisH />
+                  </button>
+                </td>
+                <td>
+                  <button 
+                    className="icon-btn" 
+                    title="Xóa"
+                    onClick={() => handleDelete(apt.id)}
+                    style={{ color: '#f44336' }}
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -661,7 +823,7 @@ function QuanLyLichHen() {
         </div>
       </div>
 
-      {/* ===== MODAL: ĐỔI GIỜ KHÁM ===== */}
+      {/* ===== MODAL: ĐỔI GIỜ KHÁM (CÓ GHI CHÚ) ===== */}
       {showChangeTimeModal && selectedAppointment && (
         <div className="modal-overlay" onClick={() => setShowChangeTimeModal(false)}>
           <div className="modal-content" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
@@ -699,6 +861,23 @@ function QuanLyLichHen() {
                 </div>
               </div>
 
+              <div className="form-group" style={{ marginTop: '15px' }}>
+                <label>Ghi chú</label>
+                <textarea
+                  value={changeTimeForm.notes}
+                  onChange={(e) => setChangeTimeForm({...changeTimeForm, notes: e.target.value})}
+                  placeholder="Nhập ghi chú..."
+                  rows="3"
+                  style={{ 
+                    width: '100%', 
+                    padding: '8px', 
+                    border: '1px solid #ddd', 
+                    borderRadius: '4px',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
               {selectedAppointment.oldPrescriptionNotes && (
                 <div style={{ marginTop: '15px', padding: '10px', background: '#fff3cd', borderRadius: '4px', fontSize: '13px' }}>
                   <strong>Đơn thuốc liên quan:</strong> DT230216031 ({selectedAppointment.date})
@@ -711,6 +890,284 @@ function QuanLyLichHen() {
               </button>
               <button type="button" className="btn-save" onClick={handleSaveChangeTime}>
                 Cập nhật
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== MODAL: HỒ SƠ KHÁCH HÀNG ===== */}
+      {showProfileModal && selectedAppointment && (
+        <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '900px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ background: '#4ECDC4' }}>
+              <h3>{selectedAppointment.customerId || 'BN150100037'}</h3>
+              <button className="close-btn" onClick={() => setShowProfileModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className="modal-body">
+              {/* Customer Info */}
+              <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                <h4 style={{ color: '#4CAF50', marginBottom: '20px' }}>HỒ SƠ KHÁCH HÀNG</h4>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', alignItems: 'flex-start' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                      width: '120px', 
+                      height: '120px', 
+                      background: '#f5f5f5', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      marginBottom: '10px',
+                      borderRadius: '8px'
+                    }}>
+                      <FaQrcode size={100} style={{ color: '#4ECDC4' }} />
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#666' }}>Mã số: {selectedAppointment.customerId || 'BN150100037'}</p>
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ marginBottom: '8px', fontSize: '14px' }}>
+                      <span style={{ fontWeight: '600', minWidth: '100px', display: 'inline-block' }}>Họ tên</span>
+                      <span>: {selectedAppointment.customerName}</span>
+                    </div>
+                    <div style={{ marginBottom: '8px', fontSize: '14px' }}>
+                      <span style={{ fontWeight: '600', minWidth: '100px', display: 'inline-block' }}>Điện thoại</span>
+                      <span>: {selectedAppointment.customerPhone}</span>
+                    </div>
+                    <div style={{ marginBottom: '8px', fontSize: '14px' }}>
+                      <span style={{ fontWeight: '600', minWidth: '100px', display: 'inline-block' }}>Địa chỉ</span>
+                      <span>: {selectedAppointment.customerAddress}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pet Info */}
+              <div style={{ marginBottom: '30px' }}>
+                <h5 style={{ color: '#2196F3', marginBottom: '15px', fontSize: '16px' }}>VẬT NUÔI</h5>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ background: '#f8f9fa' }}>
+                      <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>MÃ SỐ</th>
+                      <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>TÊN VẬT NUÔI</th>
+                      <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>LOÀI</th>
+                      <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>GIỐNG</th>
+                      <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>GIỚI TÍNH</th>
+                      <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>MÀU SẮC</th>
+                      <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>TUỔI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{selectedAppointment.petCode}</td>
+                      <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{selectedAppointment.petName}</td>
+                      <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{selectedAppointment.petSpecies}</td>
+                      <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{selectedAppointment.petBreed}</td>
+                      <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>Cái</td>
+                      <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>TRẮNG ĐEN</td>
+                      <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{selectedAppointment.petAge}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Prescriptions */}
+              <div style={{ marginBottom: '30px' }}>
+                <h5 style={{ color: '#2196F3', marginBottom: '15px', fontSize: '16px' }}>ĐƠN THUỐC</h5>
+                {selectedAppointment.prescriptions && selectedAppointment.prescriptions.length > 0 ? (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f9fa' }}>
+                        <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>VẬT NUÔI</th>
+                        <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>NGÀY</th>
+                        <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>MÃ ĐƠN THUỐC</th>
+                        <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>CHẨN ĐOÁN</th>
+                        <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>LỜI DẶN</th>
+                        <th style={{ padding: '10px', border: '1px solid #e0e0e0', textAlign: 'left' }}>NGÀY TÁI KHÁM</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedAppointment.prescriptions.map((rx, idx) => (
+                        <tr key={idx}>
+                          <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{selectedAppointment.petName}</td>
+                          <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{rx.date}</td>
+                          <td style={{ padding: '10px', border: '1px solid #e0e0e0', color: '#2196F3' }}>{rx.id}</td>
+                          <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{rx.diagnosis}</td>
+                          <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{rx.advice || '-'}</td>
+                          <td style={{ padding: '10px', border: '1px solid #e0e0e0' }}>{rx.reexamDate}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p style={{ color: '#999', fontSize: '13px' }}>Chưa có thông tin.</p>
+                )}
+              </div>
+
+              {/* Clinical Exams */}
+              <div style={{ marginBottom: '30px' }}>
+                <h5 style={{ color: '#2196F3', marginBottom: '15px', fontSize: '16px' }}>PHIẾU CHỈ ĐỊNH CLS</h5>
+                <p style={{ color: '#999', fontSize: '13px' }}>Chưa có thông tin.</p>
+              </div>
+
+              {/* Files */}
+              <div>
+                <h5 style={{ color: '#2196F3', marginBottom: '15px', fontSize: '16px' }}>FILE LIÊN QUAN</h5>
+                <p style={{ color: '#999', fontSize: '13px' }}>Chưa có thông tin.</p>
+              </div>
+            </div>
+            <div className="modal-footer" style={{ position: 'sticky', bottom: '0', background: 'white', borderRadius: '0 0 8px 8px' }}>
+              <button className="btn-action" style={{ padding: '10px 15px', background: 'white', border: '1px solid #4ECDC4', color: '#4ECDC4', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <FaPrint /> In
+              </button>
+              <button className="btn-action" style={{ padding: '10px 15px', background: 'white', border: '1px solid #4ECDC4', color: '#4ECDC4', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <FaExchangeAlt /> Copy link
+              </button>
+              <button className="btn-action" style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#4ECDC4', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FaEllipsisH />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== MODAL: DIỄN TIẾN / TRỌNG LƯỢNG / FILE LIÊN QUAN ===== */}
+      {showProgressModal && selectedAppointment && (
+        <div className="modal-overlay" onClick={() => setShowProgressModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '1000px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ background: '#4ECDC4' }}>
+              <h3>DIỄN TIẾN / TRỌNG LƯỢNG / FILE LIÊN QUAN</h3>
+              <button className="close-btn" onClick={() => setShowProgressModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div style={{ marginBottom: '20px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0' }}>
+                <strong>{selectedAppointment.petName}</strong> ({selectedAppointment.petCode}) - {selectedAppointment.petSpecies} - {selectedAppointment.petBreed}
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                {/* Disease Progress */}
+                <div style={{ border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
+                  <div style={{ background: '#f0f9f4', padding: '12px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h5 style={{ margin: 0, color: '#4CAF50', fontSize: '14px' }}>Diễn tiến bệnh</h5>
+                    <button style={{ 
+                      width: '28px', 
+                      height: '28px', 
+                      borderRadius: '50%', 
+                      border: '2px solid #4CAF50', 
+                      background: 'white', 
+                      color: '#4CAF50',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <FaPlus size={12} />
+                    </button>
+                  </div>
+                  <div style={{ padding: '12px', maxHeight: '300px', overflowY: 'auto' }}>
+                    {selectedAppointment.progress && selectedAppointment.progress.length > 0 ? (
+                      selectedAppointment.progress.map((item, idx) => (
+                        <div key={idx} style={{ 
+                          marginBottom: '10px', 
+                          padding: '10px', 
+                          background: '#f5f5f5', 
+                          borderRadius: '4px',
+                          position: 'relative'
+                        }}>
+                          <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px', fontWeight: '500' }}>{item.date}</div>
+                          <div style={{ fontSize: '13px' }}>{item.note}</div>
+                          <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }}>
+                            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4ECDC4' }}>
+                              <FaEdit size={12} />
+                            </button>
+                            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999' }}>
+                              <FaTimes size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ color: '#999', fontSize: '13px', textAlign: 'center' }}>Chưa có thông tin.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Vitals */}
+                <div style={{ border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
+                  <div style={{ background: '#f0f9f4', padding: '12px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h5 style={{ margin: 0, color: '#4CAF50', fontSize: '14px' }}>Sinh hiệu</h5>
+                    <button style={{ 
+                      width: '28px', 
+                      height: '28px', 
+                      borderRadius: '50%', 
+                      border: '2px solid #4CAF50', 
+                      background: 'white', 
+                      color: '#4CAF50',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <FaPlus size={12} />
+                    </button>
+                  </div>
+                  <div style={{ padding: '12px', maxHeight: '300px', overflowY: 'auto' }}>
+                    {selectedAppointment.vitals && selectedAppointment.vitals.length > 0 ? (
+                      selectedAppointment.vitals.map((item, idx) => (
+                        <div key={idx} style={{ 
+                          marginBottom: '10px', 
+                          padding: '10px', 
+                          background: '#f5f5f5', 
+                          borderRadius: '4px',
+                          position: 'relative'
+                        }}>
+                          <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px', fontWeight: '500' }}>{item.date}</div>
+                          <div style={{ fontSize: '13px', display: 'flex', gap: '20px' }}>
+                            {item.temperature && <span>• Nhiệt độ: {item.temperature}</span>}
+                            {item.weight && <span>• Nặng: {item.weight}</span>}
+                          </div>
+                          <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }}>
+                            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4ECDC4' }}>
+                              <FaEdit size={12} />
+                            </button>
+                            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999' }}>
+                              <FaTimes size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ color: '#999', fontSize: '13px', textAlign: 'center' }}>Chưa có thông tin.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Files */}
+              <div style={{ border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
+                <div style={{ background: '#f0f9f4', padding: '12px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h5 style={{ margin: 0, color: '#4CAF50', fontSize: '14px' }}>Files</h5>
+                  <button style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    cursor: 'pointer', 
+                    color: '#4CAF50',
+                    fontSize: '18px'
+                  }}>
+                    <FaPlus />
+                  </button>
+                </div>
+                <div style={{ padding: '12px', minHeight: '100px' }}>
+                  <p style={{ color: '#999', fontSize: '13px', textAlign: 'center' }}>Chưa có file nào.</p>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn-cancel" onClick={() => setShowProgressModal(false)}>
+                Đóng
               </button>
             </div>
           </div>
